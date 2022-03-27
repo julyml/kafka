@@ -10,6 +10,7 @@ services:
     image: confluentinc/cp-kafka:5.1.2
     depends_on:
       - zookeeper
+    
     ports:
       - 9092:9092
     environment:
@@ -18,10 +19,11 @@ services:
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-
+      
   schema-registry:
     image: confluentinc/cp-schema-registry:5.1.2
     hostname: schema-registry
+    
     ports:
       - 8081:8081
     depends_on:
@@ -35,6 +37,8 @@ services:
 
   ksql-server:
     image: confluentinc/cp-ksql-server:5.1.2
+    volumes:
+        - ./sql:/opt/data/scripts/    
     depends_on:
       - kafka
       - schema-registry
@@ -44,3 +48,23 @@ services:
       KSQL_KSQL_SCHEMA_REGISTRY_URL: http://schema-registry:8081
       KSQL_KSQL_SERVICE_ID: ksql-server
 
+  airflow:
+      image: ${REPO}
+      container_name: airflow
+      
+      volumes:
+        - ./dags:/opt/airflow/dags
+        - ./sql:/opt/airflow/sql
+        - ./tests:/opt/airflow/tests
+        - ./data:/opt/airflow/data
+        - ./requirements.txt:/opt/airflow/requirements.txt
+      environment: 
+        - AIRFLOW_HOME=/opt/airflow
+        - AIRFLOW__CORE__FERNET_KEY=${FERNET_KEY}
+        - AIRFLOW__CORE__EXECUTOR=${EXECUTOR}
+        - AIRFLOW__CORE__LOAD_EXAMPLES=false
+        - AIRFLOW__CORE__LOAD_DEFAULT_CONNECTIONS=false
+        - AIRFLOW__API__AUTH_BACKEND=${AIRFLOW_API_BACKEND}
+      ports:
+        - 8080:8080
+      command: 'bash -c "pip3 install -r requirements.txt && airflow db init && airflow webserver -D && airflow scheduler -D"'

@@ -1,0 +1,6 @@
+pytest
+sqlAlchemy
+pandas
+psycopg2-binary
+kafka-python
+ksql

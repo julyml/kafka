@@ -1,0 +1,1 @@
+CREATE TABLE users (id BIGINT, deviceId VARCHAR, "timestamp" BIGINT, action VARCHAR, videoId BIGINT, duration BIGINT, playbackPercentage BIGINT, playerType VARCHAR, channel VARCHAR, title VARCHAR, displayArtist VARCHAR ) WITH (KAFKA_TOPIC = 'action-data',   VALUE_FORMAT='JSON',   KEY = 'id')
