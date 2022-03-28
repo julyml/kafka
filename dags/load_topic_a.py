@@ -55,21 +55,21 @@ with DAG(dag_id='load_user_action_data',
 
     execution_date = '{{ ds }}'
     
-    # load_json_data_kafka = PythonOperator(
-    #     task_id='load_json_data_kafka',
-    #     python_callable=load_json_data_kafka,
-    #     op_kwargs={
-    #         'data_path': '/opt/airflow/data/action_data.json',
-    #         'topic_name': 'action-data'
-    #     }
-    # )
+    load_json_data_kafka = PythonOperator(
+        task_id='load_json_data_kafka',
+        python_callable=load_json_data_kafka,
+        op_kwargs={
+            'data_path': '/opt/airflow/data/action_data.json',
+            'topic_name': 'topic_a'
+        }
+    )
     
     create_table = PythonOperator(
         task_id='create_table_users',
         python_callable=create_table_airflow,
         op_kwargs={
             'table_name': 'user_actions',
-            'topic': 'action-data',
+            'topic': 'topic_a',
             "columns_type" : ["id BIGINT", "deviceId VARCHAR", '"timestamp" BIGINT', "action VARCHAR"," videoId BIGINT", "duration BIGINT", "playbackPercentage BIGINT", "playerType VARCHAR", "channel VARCHAR", "title VARCHAR", "displayArtist VARCHAR" ],
             'value_format' : 'JSON',
             "key" : "id"
@@ -78,7 +78,7 @@ with DAG(dag_id='load_user_action_data',
     
     
     
-    create_table
+    load_json_data_kafka >> create_table
 
 
 
