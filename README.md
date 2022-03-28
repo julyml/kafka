@@ -5,7 +5,7 @@ This project aiming to process two kafka topics and keep them updated
 
 # How to run
 
-1. Make a dir called on the project root data and inside it insert the Json file
+1. Make a dir called data on the project root data and inside it insert the Json file
 2. make setup
 
 ## Troubleshooting 
