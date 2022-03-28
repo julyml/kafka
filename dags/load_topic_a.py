@@ -6,9 +6,6 @@ import json
 from kafka import KafkaProducer
 from ksql import KSQLAPI
 
-
-
-
    
 def load_json_data_kafka(**kwargs):
     topic_name = kwargs.get('topic_name')
@@ -29,7 +26,7 @@ def load_json_data_kafka(**kwargs):
     return
 
 def create_table_airflow(**kwargs):
-    table_name = kwargs.get('table_name')
+    stream_name = kwargs.get('stream_name')
     columns_type = kwargs.get('columns_type')
     topic = kwargs.get('topic')
     key = kwargs.get('key')
@@ -37,13 +34,13 @@ def create_table_airflow(**kwargs):
     client = KSQLAPI('http://ksql-server:8088')
     
     try:
-        client.create_table(table_name=table_name,
+        client.create_stream(table_name=stream_name,
                         columns_type=columns_type,
                         topic=topic,
-                        value_format=value_format,
-                        key=key)
+                        value_format=value_format
+                        )
     except Exception as e:
-        print(f'Error at create table: {e}')
+        print(f'Error at create stream: {e}')
     
 
 
@@ -68,17 +65,16 @@ with DAG(dag_id='load_user_action_data',
         task_id='create_table_users',
         python_callable=create_table_airflow,
         op_kwargs={
-            'table_name': 'user_actions',
+            'stream_name': 'user_actions',
             'topic': 'topic_a',
             "columns_type" : ["id BIGINT", "deviceId VARCHAR", '"timestamp" BIGINT', "action VARCHAR"," videoId BIGINT", "duration BIGINT", "playbackPercentage BIGINT", "playerType VARCHAR", "channel VARCHAR", "title VARCHAR", "displayArtist VARCHAR" ],
-            'value_format' : 'JSON',
-            "key" : "id"
+            'value_format' : 'JSON'
         }
     )
     
     
     
-    load_json_data_kafka >> create_table
+    create_table >> load_json_data_kafka 
 
 
 

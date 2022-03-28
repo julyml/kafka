@@ -18,13 +18,24 @@ def convert(str_date):
 def send_data(**kwargs):
     dest_topic_name = kwargs.get('dest_topic_name')
     source_table_name = kwargs.get('source_table_name')
-    time_begin = kwargs.get('data_path')
-    time_end = kwargs.get('data_path')
+    time_begin = convert(kwargs.get('time_begin'))
+    time_end = convert(kwargs.get('time_end'))   
     
-    client = KSQLAPI('http://ksql-server:8088')
-    query = client.query(f'select * from {source_table_name} where "timestamp" BETWEEN {time_begin} AND {time_end}')
-    for item in query: 
-        load_json_data_kafka(item,dest_topic_name)
+    try:
+        client = KSQLAPI('http://ksql-server:8088')
+        sql = f'select * from user_actions where "timestamp" BETWEEN 1618398000 AND 1618405200;'
+        print(sql)
+        try:
+            query = client.query(sql)
+        except Exception as e:
+            print(f'Error {e}')
+        else:
+            for item in query: 
+                print('messagem',item)
+                load_json_data_kafka(item,dest_topic_name)
+    except Exception as e:
+            print(f'Error {e}')
+
     return
         
 def load_json_data_kafka(message,dest_topic_name):
@@ -39,7 +50,7 @@ def load_json_data_kafka(message,dest_topic_name):
     producer.send(dest_topic_name, message)
     return
     
-with DAG(dag_id='load_user_action_data',
+with DAG(dag_id='send_data_topic_b',
          default_args={'owner': 'airflow'},
          schedule_interval="@once",
          start_date=days_ago(2),
@@ -49,12 +60,12 @@ with DAG(dag_id='load_user_action_data',
     
     load_topic_a_data_kafka = PythonOperator(
         task_id='load_topic_a_data_kafka',
-        python_callable=load_json_data_kafka,
+        python_callable=send_data,
         op_kwargs={
             'dest_topic_name' : 'topic_b',
             'source_table_name' : 'user_actions',
-            'time_begin' :  convert('04/14/2021 11:00:00'),
-            'time_end' : convert('04/14/2021 13:00:00')
+            'time_begin' : '04/14/2021 11:00:00',
+            'time_end' : '04/14/2021 13:00:00'
         }
     )
      

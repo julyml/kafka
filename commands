@@ -1,0 +1,24 @@
+comands 
+
+docker-compose exec kafka kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic action-data
+
+
+
+	docker-compose exec -e 'commit.interval.ms'='2000' ksql-server  env
+	docker-compose exec -e 'cache.max.bytes.buffering'='10000000' ksql-server  env
+	docker-compose exec -e 'auto.offset.reset'='earliest' ksql-server  env
+
+
+
+set 'commit.interval.ms'='2000';
+set 'auto.offset.reset'='earliest';
+set 'cache.max.bytes.buffering'='10000000';
+
+
+docker exec -it ksqldb-cli ksql --execute "SHOW STREAMS;" -- http://ksql-server:8088
+
+docker-compose exec ksqldb-cli bash -c 'echo -e "\n\n⏳ Waiting for KSQL to be available before launching CLI\n"; while [ $(curl -s -o /dev/null -w %{http_code} http://ksql-server:8088/) -eq 000 ] ; do echo -e $(date) "KSQL Server HTTP state: " $(curl -s -o /dev/null -w %{http_code} http://ksql-server:8088/) " (waiting for 200)" ; sleep 5 ; done; ksql http://ksql-server:8088'
+
+    "SHOW TOPICS;"| ksql http://ksql-server:8088\
+
+    docker exec -it ksqldb-cli  "SHOW TOPICS;"|  ksql http://ksql-server:8088
