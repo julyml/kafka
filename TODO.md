@@ -1,9 +1,9 @@
 # TODO
-- [ ] finish the data ingestion to topic_b
-- [ ] explanation for the solution
-- [ ] answer to possible problems
+- [ ] finish the data ingestion to topic-b
 # DONE
-- [x] topic_a ingestion
-- [x] topic_a pipeline
+- [x] explanation for the solution
+- [x] answer to possible problems
+- [x] topic-a ingestion
+- [x] topic-a pipeline
 - [x] docker compose configuration
 

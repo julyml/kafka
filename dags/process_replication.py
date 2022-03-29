@@ -27,12 +27,19 @@ def load_json_data_kafka(**kwargs):
     for message in messages:
         counter+=1
         producer.send(topic_name, message)
-        if counter == 500:
+        if counter == 1000:
             counter=0
             producer.flush()
             sleep(3)
     print('All data was sent')
     return
+
+import time
+import datetime
+
+def convert(str_date):
+    return  int(time.mktime(datetime.datetime.strptime(str_date,'%m/%d/%Y %H:%M:%S').timetuple()))
+
 
 
 def consume_topic(**kwargs):
@@ -47,19 +54,22 @@ def consume_topic(**kwargs):
         group_id='my-group',
         value_deserializer=lambda x: json.loads(x.decode('utf-8'))
      )
+    
+    time_begin = convert('04/14/2021 11:00:00')
+    time_end = convert('04/14/2021 13:00:00')
+
 
     while True:
-        msg = consumer.poll(1.0)
-        if msg is None:
-            continue
-        if msg.error():
-            break
-        load_msg_kafka(msg,topic_tgt)
-        print(type(msg))
-        sleep(3)
-        
-
+        for msg in consumer:
+            if msg.value['timestamp'] >= time_begin and msg.value['timestamp'] <= time_end:
+                load_msg_kafka(msg,topic_tgt)
+                print(type( msg.value), msg.value)
+     
+def convert(str_date):
+    return  int(time.mktime(datetime.datetime.strptime(str_date,'%m/%d/%Y %H:%M:%S').timetuple()))
+    
 def load_msg_kafka(message, topic_name):
+
     producer = KafkaProducer(
         bootstrap_servers=['kafka:9092'],
         api_version=(0,10,2),
@@ -82,7 +92,7 @@ with DAG(dag_id='process_replication',
         python_callable=load_json_data_kafka,
         op_kwargs={
             'data_path': '/opt/airflow/data/action_data.json',
-            'topic_name': 'topic_a'
+            'topic_name': 'topic-a'
         }
     )
         
@@ -90,12 +100,12 @@ with DAG(dag_id='process_replication',
         task_id='consume_topic_a',
         python_callable=consume_topic,
         op_kwargs={
-            'topic_src': 'topic_a',
-            'topic_tgt':'topic_b'
+            'topic_src': 'topic-a',
+            'topic_tgt':'topic-b'
         }
     )   
     
-    [load_json_data_kafka, consume_topic_a]
+    [load_json_data_kafka,consume_topic_a]
 
 
 

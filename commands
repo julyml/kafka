@@ -45,7 +45,7 @@ create table user_actions( id BIGINT, deviceId VARCHAR, timestamp BIGINT, action
 docker run --network kafka-airflow-setup_default --tty --interactive --rm \
           confluentinc/cp-kafkacat \
           kafkacat -b kafka:9092 \
-          -C -t topic_a \
+          -C -t topic-b \
           -o beginning -c 1
 
 

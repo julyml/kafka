@@ -5,8 +5,8 @@ setup:
 	sleep 120
 	docker-compose exec airflow airflow users create --username admin --password admin --role Admin --firstname july --lastname lima --email admin@email.com
 	sleep 20
-	docker-compose exec kafka kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic topic_a
-	docker-compose exec kafka kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic topic_b
+	docker-compose exec kafka kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic topic-a
+	docker-compose exec kafka kafka-topics --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic topic-b
 	sleep 20
 	docker-compose exec airflow airflow dags backfill -s now process_replication 	
 down:
